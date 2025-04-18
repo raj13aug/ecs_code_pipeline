@@ -1,18 +1,18 @@
-# Use official Node.js base image
-FROM node:18
+FROM public.ecr.aws/amazonlinux/amazonlinux:latest
 
-# Set the working directory
-WORKDIR /app
+# Update installed packages and install Apache
+RUN yum update -y && \
+ yum install -y httpd
 
-# Copy package.json and install dependencies
-COPY package*.json ./
-RUN npm install
+# Write hello world message
+RUN echo 'Hello World!' > /var/www/html/index.html
 
-# Copy the rest of the app code
-COPY . .
+# Configure Apache
+RUN echo 'mkdir -p /var/run/httpd' >> /root/run_apache.sh && \
+ echo 'mkdir -p /var/lock/httpd' >> /root/run_apache.sh && \
+ echo '/usr/sbin/httpd -D FOREGROUND' >> /root/run_apache.sh && \
+ chmod 755 /root/run_apache.sh
 
-# Expose the app port
 EXPOSE 80
 
-# Start the app
-CMD ["npm", "start"]
+CMD /root/run_apache.sh
